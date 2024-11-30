@@ -154,11 +154,10 @@ information, except IP address - see privacy policy and full terms of \
 service on earnapp.com."
 }
 
-# ask_consent(){
-#     read -rp "Do you agree to EarnApp's terms? (Write 'yes' to continue): " \
-#         consent
-# }
-ask_consent="yes"
+ask_consent(){
+    read -rp "Do you agree to EarnApp's terms? (Write 'yes' to continue): " \
+        consent
+}
 
 if [[ $EUID -ne 0 ]]; then
    print "⚠ This script must be run as root"
@@ -222,6 +221,7 @@ fi
 while [[ ${consent,,} != 'yes' ]] && [[ ${consent,,} != 'no' ]]; do
     ask_consent
 done
+consent='yes'
 if [ ${consent,,} == 'yes' ]; then
     print "✔ Installing..."
     perr "03_consent_yes"
