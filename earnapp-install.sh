@@ -47,10 +47,6 @@ UUID_HASH=$(md5sum <<< "$UUID")
 UUID_I=$((0x${UUID_HASH%% *}))
 UUID_N=$((${UUID_I#-}%100))
 INSTALL=0
-# INSTALL_PERCENT=5
-# if [ -z "$UUID" ] || [ "$UUID_N" -lt "$INSTALL_PERCENT" ]; then
-#    INSTALL=1
-# fi
 RS=""
 PERR_URL="https://perr.brightdata.com/client_cgi/perr"
 
@@ -75,8 +71,6 @@ read_log()
 {
     if [ -f "$LOG_FILENAME" ]; then
         LOG=$(tail -50 "$LOG_FILENAME") # | tr -dc '[:print:]')
-        # restore after debug
-        # rm -f "$LOG_FILENAME"
     fi
 }
 
@@ -103,7 +97,7 @@ perr()
     local filehead=$RS
     local url_glob="${PERR_URL}/?id=earnapp_cli_sh_${name}"
     local url_arch="${PERR_URL}/?id=earnapp_cli_sh_${PERR_ARCH}_${name}"
-    local build="Version: $VERSION\nOS Version: $OS_VER\nCPU ABI: $OS_ARCH\nProduct: $PRODUCT\nInstall ID: $RID\nPublic IP: $IP\nLocal IP: $LADDR\nHost: $RHOST\nUser: $USER\nPlatform: $OS_NAME\nSerial: $SERIAL\n"
+    local build="Version: $VERSION\nOS Version: $OS_VER\nCPU ABI: $OS_ARCH\nProduct: $PRODUCT\nInstall ID: $RID\nPublic IP: $IP\nLocal IP: $LADDR\nHost: $RHOST\n:User  $USER\nPlatform: $OS_NAME\nSerial: $SERIAL\n"
     local data="{
         \"uuid\": \"$UUID\",
         \"client_ts\": \"$ts\",
@@ -116,7 +110,7 @@ perr()
         if ((PRINT_PERR_DATA)); then
             print "📧 $url_glob $data"
         else
-            print "📧 $url_glob $note"
+            print " 📧 $url_glob $note"
         fi
     fi
     for ((i=0; i<NETWORK_RETRY; i++)); do
@@ -154,10 +148,8 @@ information, except IP address - see privacy policy and full terms of \
 service on earnapp.com."
 }
 
-ask_consent(){
-    read -rp "Do you agree to EarnApp's terms? (Write 'yes' to continue): " \
-        consent
-}
+# Set consent directly to 'yes'
+consent='yes'
 
 if [[ $EUID -ne 0 ]]; then
    print "⚠ This script must be run as root"
@@ -218,10 +210,7 @@ else
     welcome_text
 fi
 
-while [[ ${consent,,} != 'yes' ]] && [[ ${consent,,} != 'no' ]]; do
-    ask_consent
-done
-consent='yes'
+# Skip the consent check since consent is always 'yes'
 if [ ${consent,,} == 'yes' ]; then
     print "✔ Installing..."
     perr "03_consent_yes"
